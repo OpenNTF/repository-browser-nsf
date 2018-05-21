@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<note xmlns="http://www.lotus.com/dxl" class="form">
+  <item name="$TITLE" sign="true">
+    <text>logox50b.png</text>
+  </item>
+  <item name="$ImagesWide" sign="true">
+    <number>1</number>
+  </item>
+  <item name="$ImagesHigh" sign="true">
+    <number>1</number>
+  </item>
+  <item name="$ImagesColorize" sign="true">
+    <number>0</number>
+  </item>
+  <item name="$ImageNames" sign="true">
+    <text>logox50b.png</text>
+  </item>
+  <item name="$Flags">
+    <text>34CiQ</text>
+  </item>
+  <item name="$FlagsExt" sign="true">
+    <text>D</text>
+  </item>
+</note>

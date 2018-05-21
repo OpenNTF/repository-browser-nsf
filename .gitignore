@@ -1,0 +1,24 @@
+bin/
+target/
+node_modules/
+
+.DS_Store*
+Thumbs.db*
+*.stackdump
+
+# These have proven problematic with Dora
+AboutDocument
+UsingDocument
+
+# Maven/Tycho residue
+.polyglot.build.properties
+
+
+.fbExcludeFilterFile
+edu.umd.cs.findbugs.core.prefs
+.jsdtscope
+
+# Eclipse stuff
+.settings/
+.classpath
+.project

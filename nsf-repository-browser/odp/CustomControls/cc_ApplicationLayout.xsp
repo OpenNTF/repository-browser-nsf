@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xe="http://www.ibm.com/xsp/coreex">
+
+	<xe:applicationLayout id="applicationLayout1">
+		<xp:callback facetName="facetMiddle" id="facetMiddle"></xp:callback>
+		<xe:this.configuration>
+			<xe:simpleResponsiveConfiguration navbarLogo="/logox50.jpg"
+				fixedNavbar="fixed-top" invertedNavbar="true" pageWidth="fixed"
+				navbarText="Repository Browser">
+			</xe:simpleResponsiveConfiguration>
+		</xe:this.configuration>
+	</xe:applicationLayout></xp:view>
