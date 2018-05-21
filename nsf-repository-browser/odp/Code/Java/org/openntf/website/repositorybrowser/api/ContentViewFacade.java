@@ -48,6 +48,10 @@ public class ContentViewFacade implements Serializable {
 		Path dataPath = StringUtil.isNotEmpty(path) ?
 				Constants.REPOSITORY_BASE_DIR.resolve(path) :
 				Constants.REPOSITORY_BASE_DIR;
+		
+		if(!dataPath.startsWith(Constants.REPOSITORY_BASE_DIR)) {
+			throw new IllegalArgumentException("Path is not within the repository root: " + path);
+		}
 				
 		return Files.list(dataPath)
 			.map(p -> FileEntry.fromPath(p, Paths.get(path)))
