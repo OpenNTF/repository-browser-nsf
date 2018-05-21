@@ -1,20 +1,24 @@
 package org.openntf.website.repositorybrowser.api;
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import javax.faces.context.FacesContext;
+
+import org.openntf.website.repositorybrowser.Constants;
 import org.openntf.website.repositorybrowser.bo.FileEntry;
 
-import com.ibm.xsp.extlib.util.ExtLibUtil;
+import com.ibm.commons.util.StringUtil;
+import com.ibm.xsp.component.UIViewRootEx2;
 
 public class ContentViewFacade implements Serializable {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	private String path = "";
@@ -27,32 +31,32 @@ public class ContentViewFacade implements Serializable {
 		this.path = path;
 	}
 
-	public List<FileEntry> getEntries() {
-		List<FileEntry> entries = new ArrayList<FileEntry>();
-		try {
-			String dataDir = ExtLibUtil.getCurrentSession().getEnvironmentString("directory", true);
-			dataDir = dataDir + "/domino/html/repository/" + path;
-			File file = new File(dataDir);
-			for (File currentFile : file.listFiles()) {
-				FileEntry entry = FileEntry.buildEntryFromFile(currentFile, path);
-				entries.add(entry);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		Collections.sort(entries);
-		return entries;
+	public List<FileEntry> getEntries() throws Exception {
+		Path dataPath = StringUtil.isNotEmpty(path) ?
+				Constants.REPOSITORY_BASE_DIR.resolve(path) :
+				Constants.REPOSITORY_BASE_DIR;
+				
+		return Files.list(dataPath)
+			.map(p -> FileEntry.fromPath(p, Paths.get(path)))
+			.sorted()
+			.collect(Collectors.toList());
 	}
 	
-	public String backURL() {
+	public String getBackURL() {
 		if (path.equals("")) {
 			return "";
 		}
+		UIViewRootEx2 viewRoot = (UIViewRootEx2)FacesContext.getCurrentInstance().getViewRoot();
+		String pageName = viewRoot.getPageName();
+		
 		String[] pathElements = path.split("/");
-		StringBuilder sb = new StringBuilder("/home.xsp?path=");
-		for (int counter = 1; counter < pathElements.length; counter++) {
-			sb.append(pathElements[counter-1] +"/");
-		}
-		return sb.toString();
+		
+		return pageName + "?path=" +
+			Arrays.stream(Arrays.copyOfRange(pathElements, 0, pathElements.length-1))
+			.collect(Collectors.joining("/"));
+	}
+	
+	public String getDirectLink() {
+		return "/.ibmxspres/domino/" + Constants.REPOSITORY_BASE + "/" + path + "/";
 	}
 }

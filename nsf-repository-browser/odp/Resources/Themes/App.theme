@@ -3,7 +3,7 @@
 		<name>ViewRoot</name>
 		<property>
 			<name>pageTitle</name>
-			<value>#{database.title}</value>
+			<value>#{translation.appName}</value>
 		</property>
 	</control>
 </theme>

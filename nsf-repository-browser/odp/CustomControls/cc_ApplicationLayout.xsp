@@ -6,7 +6,7 @@
 		<xe:this.configuration>
 			<xe:simpleResponsiveConfiguration navbarLogo="/logox50.jpg"
 				fixedNavbar="fixed-top" invertedNavbar="true" pageWidth="fixed"
-				navbarText="Repository Browser">
+				navbarText="${translation.appName}">
 			</xe:simpleResponsiveConfiguration>
 		</xe:this.configuration>
 	</xe:applicationLayout></xp:view>

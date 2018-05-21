@@ -1,41 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom">
 
-	<xp:this.beforeRenderResponse><![CDATA[#{javascript:var path = paramValues.path === null? "" : ""+paramValues.path;
-if (path.indexOf("../") > -1) {
-	context.redirectToHome();
-}
-content.initPath(path);}]]></xp:this.beforeRenderResponse>
+	<xp:this.beforeRenderResponse><![CDATA[#{javascript:
+		var path = paramValues.path === null? "" : ""+paramValues.path;
+		if (path.indexOf("../") > -1) {
+			context.redirectToHome();
+		}
+		content.initPath(path);
+	}]]></xp:this.beforeRenderResponse>
+	
 	<xc:cc_ApplicationLayout>
 		<xp:this.facets>
-			<xp:panel xp:key="facetMiddle" styleClass="panel panel-default">
-				<xp:panel styleClass="panel-heading">
-				<xp:link escape="true" text="Up" id="back"
-					value="#{javascript:content.backURL();}">
-					<xp:this.rendered><![CDATA[#{javascript:content.backURL() != ""}]]></xp:this.rendered>
-					<xp:image id="image2" url="/arrow_up.png"></xp:image>
-				</xp:link>
-				&#160;&#160;Path:
-				<xp:text escape="true" id="computedField1" value="#{content.path}">
-				</xp:text>
-				</xp:panel>
-				<xp:table styleClass="table">
-					<xp:repeat id="files" first="0" rows="10000" var="file"
-						indexVar="fileNr" value="#{content.entries}">
-						<xp:tr>
-							<xp:td>
-								<xp:image url="#{javascript:file.icon}" id="image1">
-								</xp:image>
-							</xp:td>
-							<xp:td>
-								<xp:link escape="true" text="#{file.name}"
-									id="link1" value="#{file.href}">
-								</xp:link>
-							</xp:td>
-						</xp:tr>
-					</xp:repeat>
-				</xp:table>
-			</xp:panel>
+			<xp:div xp:key="facetMiddle" styleClass="panel panel-default">
+				<div class="panel-heading">
+					<div class="pull-right">
+						<xp:link text="${translation.directLink}" value="#{content.directLink}"/>
+					</div>
+				
+					<xp:link text="Up" id="back"
+						value="#{content.backURL}" rendered="#{not empty content.backURL}">
+						<xp:image url="/arrow_up.png"/>
+					</xp:link>
+					&#160;&#160;
+					<xp:text value="#{translation.pathLabel}#{content.path}"/>
+				</div>
+				<xp:dataTable id="files" rows="100000" var="file" value="#{content.entries}">
+					<xp:column>
+						<xp:image url="#{file.folder ? '/folder.png' : '/page.png'}"/>
+					</xp:column>
+					<xp:column>
+						<xp:link text="#{file.name}" value="#{file.href}"/>
+					</xp:column>
+				</xp:dataTable>
+			</xp:div>
 		</xp:this.facets>
 	</xc:cc_ApplicationLayout>
 </xp:view>
