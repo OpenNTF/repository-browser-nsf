@@ -40,7 +40,7 @@ import com.ibm.xsp.model.DataObject;
 public class Translation implements Serializable, DataObject {
 	private static final long serialVersionUID = 1L;
 	
-	public static final String BEAN_NAME = "translation";
+	public static final String BEAN_NAME = "translation"; //$NON-NLS-1$
 
 	private transient ResourceBundle bundle_;
 	private Map<Object, String> cache_ = new HashMap<>();
@@ -70,7 +70,7 @@ public class Translation implements Serializable, DataObject {
 			} catch(IOException ioe) {
 				throw new RuntimeException(ioe);
 			} catch(MissingResourceException mre) {
-				cache_.put(key, "[Untranslated " + key + "]");
+				cache_.put(key, "[Untranslated " + key + "]"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 		return cache_.get(key);
@@ -94,7 +94,7 @@ public class Translation implements Serializable, DataObject {
 		if(bundle_ == null) {
 			FacesContext facesContext = FacesContext.getCurrentInstance();
 			ApplicationEx app = (ApplicationEx)facesContext.getApplication();
-			bundle_ = app.getResourceBundle("translation", XSPContext.getXSPContext(facesContext).getLocale());
+			bundle_ = app.getResourceBundle("translation", XSPContext.getXSPContext(facesContext).getLocale()); //$NON-NLS-1$
 		}
 		return bundle_;
 	}

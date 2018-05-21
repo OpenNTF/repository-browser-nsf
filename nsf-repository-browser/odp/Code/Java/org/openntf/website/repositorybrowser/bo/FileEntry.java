@@ -51,10 +51,10 @@ public class FileEntry implements Serializable, Comparable<FileEntry> {
 		FileEntry entry = new FileEntry();
 		if (Files.isDirectory(path)) {
 			entry.folder = true;
-			entry.href = "/home.xsp?path=" + relativePath.toString().replace(File.separatorChar, '/') + "/";
+			entry.href = "/home.xsp?path=" + relativePath.toString().replace(File.separatorChar, '/') + "/"; //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
 			entry.folder = false;
-			entry.href = "/.ibmxspres/domino/repository/" + relativePath.toString().replace(File.separatorChar, '/');
+			entry.href = "/.ibmxspres/domino/repository/" + relativePath.toString().replace(File.separatorChar, '/'); //$NON-NLS-1$
 		}
 		entry.name = path.getFileName().toString();
 		return entry;
@@ -82,7 +82,7 @@ public class FileEntry implements Serializable, Comparable<FileEntry> {
 	}
 
 	protected String getSortableName() {
-		return this.folder ? "AAA":"ZZZ" + this.name;
+		return this.folder ? "AAA":"ZZZ" + this.name; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public int compareTo(FileEntry o) {

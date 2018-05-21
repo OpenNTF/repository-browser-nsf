@@ -25,13 +25,13 @@ import lotus.domino.NotesException;
 public enum Constants {
 	;
 	
-	public static final String REPOSITORY_BASE = "repository";
+	public static final String REPOSITORY_BASE = "repository"; //$NON-NLS-1$
 	public static final Path REPOSITORY_BASE_DIR;
 	
 	static {
 		try {
-			String dataDir = ExtLibUtil.getCurrentSession().getEnvironmentString("directory", true);
-			REPOSITORY_BASE_DIR = Paths.get(dataDir, "domino", "html", REPOSITORY_BASE);
+			String dataDir = ExtLibUtil.getCurrentSession().getEnvironmentString("directory", true); //$NON-NLS-1$
+			REPOSITORY_BASE_DIR = Paths.get(dataDir, "domino", "html", REPOSITORY_BASE); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch(NotesException e) {
 			throw new RuntimeException(e);
 		}

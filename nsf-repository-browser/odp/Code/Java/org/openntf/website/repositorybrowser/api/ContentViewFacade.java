@@ -16,8 +16,6 @@
 package org.openntf.website.repositorybrowser.api;
 
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,7 +34,7 @@ import com.ibm.xsp.component.UIViewRootEx2;
 public class ContentViewFacade implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private String path = "";
+	private String path = StringUtil.EMPTY_STRING;
 
 	public String getPath() {
 		return path;
@@ -58,20 +56,20 @@ public class ContentViewFacade implements Serializable {
 	}
 	
 	public String getBackURL() {
-		if (path.equals("")) {
-			return "";
+		if (StringUtil.isEmpty(path)) {
+			return StringUtil.EMPTY_STRING;
 		}
 		UIViewRootEx2 viewRoot = (UIViewRootEx2)FacesContext.getCurrentInstance().getViewRoot();
 		String pageName = viewRoot.getPageName();
 		
-		String[] pathElements = path.split("/");
+		String[] pathElements = path.split("/"); //$NON-NLS-1$
 		
-		return pageName + "?path=" +
+		return pageName + "?path=" + //$NON-NLS-1$
 			Arrays.stream(Arrays.copyOfRange(pathElements, 0, pathElements.length-1))
-			.collect(Collectors.joining("/"));
+			.collect(Collectors.joining("/")); //$NON-NLS-1$
 	}
 	
 	public String getDirectLink() {
-		return "/.ibmxspres/domino/" + Constants.REPOSITORY_BASE + "/" + path + "/";
+		return "/.ibmxspres/domino/" + Constants.REPOSITORY_BASE + "/" + path + "/"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 }
