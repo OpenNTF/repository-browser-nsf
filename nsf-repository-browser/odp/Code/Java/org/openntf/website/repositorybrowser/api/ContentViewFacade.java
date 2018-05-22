@@ -229,7 +229,7 @@ public class ContentViewFacade implements Serializable {
 				.map(p -> FileEntry.fromPath(p, Paths.get(path)))
 				.forEach(file -> {
 					Element child = DOMUtil.createElement(doc, children, "child");
-					child.setAttribute("location", file.getName());
+					child.setAttribute("location", file.getHref());
 					count.incrementAndGet();
 				});
 			children.setAttribute("size", count.toString());
@@ -272,7 +272,7 @@ public class ContentViewFacade implements Serializable {
 				.map(p -> FileEntry.fromPath(p, Paths.get(path)))
 				.forEach(file -> {
 					Element child = DOMUtil.createElement(doc, children, "child");
-					child.setAttribute("location", file.getName());
+					child.setAttribute("location", file.getHref());
 					count.incrementAndGet();
 				});
 			children.setAttribute("size", count.toString());
