@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom"
-	beforePageLoad="#{content.init}"
+	viewState="nostate" beforePageLoad="#{content.init}"
 	beforeRenderResponse="#{javascript:content.beforeRenderResponse()}" rendered="#{content.pathDirectory}">
 	
 	<xc:cc_ApplicationLayout>
