@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <note xmlns="http://www.lotus.com/dxl" class="form">
-  <item name="$TITLE" sign="true">
-    <text>favicon.ico</text>
-  </item>
   <item name="$ImagesWide" sign="true">
     <number>1</number>
   </item>
@@ -20,5 +17,8 @@
   </item>
   <item name="$FlagsExt" sign="true">
     <text>D</text>
+  </item>
+  <item name="$TITLE" sign="true">
+    <text>favicon.png</text>
   </item>
 </note>

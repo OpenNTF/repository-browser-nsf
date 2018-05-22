@@ -5,5 +5,9 @@
 			<name>pageTitle</name>
 			<value>#{translation.appName}</value>
 		</property>
+		<property>
+			<name>pageIcon</name>
+			<value>/favicon.png</value>
+		</property>
 	</control>
 </theme>

@@ -30,6 +30,7 @@ import java.util.jar.JarOutputStream;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +48,7 @@ import com.ibm.commons.xml.DOMUtil;
 import com.ibm.commons.xml.Format;
 import com.ibm.commons.xml.XMLException;
 import com.ibm.xsp.component.UIViewRootEx2;
+import com.ibm.xsp.designer.context.XSPContext;
 import com.ibm.xsp.extlib.util.ExtLibUtil;
 import com.ibm.xsp.webapp.XspHttpServletResponse;
 
@@ -56,11 +58,27 @@ public class ContentViewFacade implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String path = StringUtil.EMPTY_STRING;
+	private boolean redirecting = false;
 	
 	public void init() {
-		// First, check the path info
 		FacesContext facesContext = FacesContext.getCurrentInstance();
-		String pathInfo = facesContext.getExternalContext().getRequestPathInfo();
+		ExternalContext externalContext = facesContext.getExternalContext();
+		HttpServletRequest req = (HttpServletRequest)externalContext.getRequest();
+		HttpServletResponse res = (HttpServletResponse)externalContext.getResponse();
+		
+		// Make sure the URL contains home.xsp, for Eclipse's sake
+		XSPContext context = XSPContext.getXSPContext(facesContext);
+		String url = context.getUrl().toString();
+		String requestUrl = req.getRequestURL().toString();
+		if(!requestUrl.startsWith(url)) {
+			res.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+			res.addHeader("Location", url);
+			redirecting = true;
+			return;
+		}
+		
+		// First, check the path info
+		String pathInfo = externalContext.getRequestPathInfo();
 		if(StringUtil.isNotEmpty(pathInfo)) {
 			// Then use the provided extra path, minus the leading "/"
 			this.path = pathInfo.substring(1);
@@ -128,10 +146,17 @@ public class ContentViewFacade implements Serializable {
 	}
 	
 	/**
-	 * @return {@code true} if the path provided to the page context is
-	 *        a regular file; {@code false} otherwise
+	 * @return {@code true} if the XPage should render a
+	 *        directory listing; {@code false} otherwise
 	 */
-	public boolean isPathDirectory() {
+	public boolean isPageRendered() {
+		if(redirecting) {
+			return false;
+		}
+		if(StringUtil.isEmpty(path)) {
+			return true;
+		}
+		
 		Path dataPath = getDataPath();
 		return Files.isDirectory(dataPath);
 	}

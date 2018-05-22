@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom"
-	beforePageLoad="#{content.init}"
-	beforeRenderResponse="#{javascript:content.beforeRenderResponse()}" rendered="#{content.pathDirectory}">
-	
+	viewState="nostate" beforePageLoad="#{content.init}"
+	beforeRenderResponse="#{javascript:content.beforeRenderResponse()}" rendered="#{content.pageRendered}">
 	<xc:cc_ApplicationLayout>
 		<xp:this.facets>
 			<xp:div xp:key="facetMiddle" styleClass="panel panel-default">
 				<div class="panel-heading">
-					<xp:link text="${translation.upOneLevel}" value="#{content.backURL}"
-						rendered="#{not empty content.backURL}">
+					<xp:link text="${translation.upOneLevel}" value="${content.backURL}"
+						loaded="${not empty content.backURL}">
 						<xp:image url="/arrow_up.png"/>
 					</xp:link>
 					&#160;&#160;

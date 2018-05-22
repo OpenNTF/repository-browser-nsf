@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openntf</groupId>
 	<artifactId>repository-browser-nsf</artifactId>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	<packaging>domino-nsf</packaging>
 	
 	<name>Repository Browser</name>
