@@ -1,15 +1,25 @@
 package org.openntf.website.repositorybrowser.fs.usnsf;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.openntf.website.repositorybrowser.fs.mem.MemoryVFSFolder;
+import org.openntf.website.repositorybrowser.fs.mem.XMLDocumentVFSFile;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.ProcessingInstruction;
 
 import com.ibm.commons.util.StringUtil;
 import com.ibm.commons.vfs.VFS;
 import com.ibm.commons.vfs.VFSException;
 import com.ibm.commons.vfs.VFSFile;
 import com.ibm.commons.vfs.VFSFilter.IFilter;
+import com.ibm.commons.xml.DOMUtil;
+import com.ibm.commons.xml.XMLException;
 import com.ibm.commons.vfs.VFSFolder;
+import com.ibm.commons.vfs.VFSResource;
 
 import lotus.domino.Database;
 import lotus.domino.DateTime;
@@ -34,21 +44,27 @@ class UpdateSiteNSFVFS extends VFS {
 	
 	private final String name;
 	private final Database database;
-	
-	private final List<VFSFolder> folders;
+
 	private final VFSFolder root;
+	private final List<VFSResource> rootResources;
 	
-	private List<VFSFile> plugins;
-	private List<VFSFile> features;
+	private List<UpdateSiteNSFVFSFile> plugins;
+	private List<UpdateSiteNSFVFSFile> features;
 	
 	public UpdateSiteNSFVFS(String name, Database database) {
 		this.name = name;
 		this.database = database;
-		this.root = new UpdateSiteNSFVFSFolder(this, name);
-		this.folders = Arrays.asList(
-			new UpdateSiteNSFVFSFolder(this, this.name + VFS.SEPARATOR + "features"), //$NON-NLS-1$
-			new UpdateSiteNSFVFSFolder(this, this.name + VFS.SEPARATOR + "plugins") //$NON-NLS-1$
-		);
+		this.root = new MemoryVFSFolder(this, name);
+		try {
+			this.rootResources = Arrays.asList(
+				new MemoryVFSFolder(this, this.name + VFS.SEPARATOR + "features"), //$NON-NLS-1$
+				new MemoryVFSFolder(this, this.name + VFS.SEPARATOR + "plugins"), //$NON-NLS-1$
+				createContentXml(),
+				createArtifactsXml()
+			);
+		} catch(XMLException | IOException | NotesException | VFSException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -57,8 +73,12 @@ class UpdateSiteNSFVFS extends VFS {
 		if(StringUtil.isEmpty(path)) {
 			result.add(doCreateFolderEntry(root));
 		} else if(StringUtil.equals(path, name)) {
-			for(VFSFolder folder : folders) {
-				result.add(doCreateFolderEntry(folder));
+			for(VFSResource res : rootResources) {
+				if(res instanceof VFSFile) {
+					result.add(doCreateFileEntry((VFSFile)res));
+				} else if(res instanceof VFSFolder) {
+					result.add(doCreateFolderEntry((VFSFolder)res));
+				}
 			}
 		} else if(StringUtil.equals(path, this.name + VFS.SEPARATOR + "plugins")) { //$NON-NLS-1$
 			for(VFSFile plugin : this.getPlugins()) {
@@ -77,7 +97,7 @@ class UpdateSiteNSFVFS extends VFS {
 		if(StringUtil.isEmpty(path)) {
 			result.add(root);
 		} else if(StringUtil.equals(path, this.name)) {
-			result.addAll(folders);
+			result.addAll(rootResources);
 		} else if(StringUtil.equals(path, this.name + VFS.SEPARATOR + "plugins")) { //$NON-NLS-1$
 			result.addAll(this.getPlugins());
 		} else if(StringUtil.equals(path, this.name + VFS.SEPARATOR + "features")) { //$NON-NLS-1$
@@ -87,33 +107,27 @@ class UpdateSiteNSFVFS extends VFS {
 
 	@Override
 	protected FileEntry doCreateFileEntry(VFSFile file) {
-		UpdateSiteNSFVFSFile nsfFile = (UpdateSiteNSFVFSFile)file;
-		return new UpdateSiteNSFFileEntry(this, file, nsfFile.getDocLastModified());
-	}
-
-	@Override
-	protected FolderEntry doCreateFolderEntry(VFSFolder folder) {
-		try {
-			DateTime dt = database.getLastModified();
-			try {
-				return new UpdateSiteNSFFolderEntry(this, folder, dt.toJavaDate().getTime());
-			} finally {
-				dt.recycle();
-			}
-		} catch(NotesException e) {
-			throw new RuntimeException(e);
+		if(file instanceof UpdateSiteNSFVFSFile) {
+			UpdateSiteNSFVFSFile nsfFile = (UpdateSiteNSFVFSFile)file;
+			return new UpdateSiteNSFFileEntry(this, file, nsfFile.getDocLastModified());
+		} else {
+			return new UpdateSiteNSFFileEntry(this, file, this.getDatabaseLastModified());
 		}
 	}
 
 	@Override
+	protected FolderEntry doCreateFolderEntry(VFSFolder folder) {
+		return new UpdateSiteNSFFolderEntry(this, folder, this.getDatabaseLastModified());
+	}
+
+	@Override
 	protected VFSFile doCreateVFSFile(String fileName) {
-		// TODO look up the file
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	protected VFSFolder doCreateVFSFolder(String folderName) {
-		return new UpdateSiteNSFVFSFolder(this, folderName);
+		return new MemoryVFSFolder(this, folderName);
 	}
 
 	@Override
@@ -146,7 +160,20 @@ class UpdateSiteNSFVFS extends VFS {
 		}
 	}
 	
-	private synchronized List<VFSFile> getPlugins() {
+	private long getDatabaseLastModified() {
+		try {
+			DateTime dt = database.getLastModified();
+			try {
+				return dt.toJavaDate().getTime();
+			} finally {
+				dt.recycle();
+			}
+		} catch(NotesException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private synchronized List<UpdateSiteNSFVFSFile> getPlugins() {
 		if(this.plugins == null) {
 			try {
 				this.plugins = new ArrayList<>();
@@ -167,7 +194,7 @@ class UpdateSiteNSFVFS extends VFS {
 							
 							String fileName = name + "_" + version + ".jar"; //$NON-NLS-1$ //$NON-NLS-2$
 							Document doc = entry.getDocument();
-							this.plugins.add(new UpdateSiteNSFVFSFile(this, this.name + VFS.SEPARATOR + "plugins" + VFS.SEPARATOR + fileName, doc)); //$NON-NLS-1$ //$NON-NLS-2$
+							this.plugins.add(new UpdateSiteNSFVFSFile(this, this.name + VFS.SEPARATOR + "plugins" + VFS.SEPARATOR + fileName, name, version, doc)); //$NON-NLS-1$
 						}
 					}
 					
@@ -181,7 +208,7 @@ class UpdateSiteNSFVFS extends VFS {
 		}
 		return this.plugins;
 	}
-	private synchronized List<VFSFile> getFeatures() {
+	private synchronized List<UpdateSiteNSFVFSFile> getFeatures() {
 		if(this.features == null) {
 			try {
 				this.features = new ArrayList<>();
@@ -204,7 +231,7 @@ class UpdateSiteNSFVFS extends VFS {
 							String fileName = name + "_" + version + ".jar"; //$NON-NLS-1$ //$NON-NLS-2$
 							
 							Document doc = entry.getDocument();
-							this.features.add(new UpdateSiteNSFVFSFile(this, this.name + VFS.SEPARATOR + "features" + VFS.SEPARATOR + fileName, doc)); //$NON-NLS-1$ //$NON-NLS-2$
+							this.features.add(new UpdateSiteNSFVFSFile(this, this.name + VFS.SEPARATOR + "features" + VFS.SEPARATOR + fileName, name, version, doc)); //$NON-NLS-1$
 						}
 					}
 					
@@ -217,5 +244,102 @@ class UpdateSiteNSFVFS extends VFS {
 			}
 		}
 		return this.features;
+	}
+	
+	private VFSFile createArtifactsXml() throws XMLException, IOException, DOMException, NotesException, VFSException {
+		org.w3c.dom.Document doc = DOMUtil.createDocument();
+		
+		{
+			ProcessingInstruction proc = doc.createProcessingInstruction("artifactRepository", "version='1.1.0'"); //$NON-NLS-1$ //$NON-NLS-2$
+			doc.appendChild(proc);
+		}
+		
+		Element repository = DOMUtil.createElement(doc, "repository"); //$NON-NLS-1$
+		repository.setAttribute("name", database.getTitle() + " Artifacts"); //$NON-NLS-1$ //$NON-NLS-2$
+		repository.setAttribute("type", "org.eclipse.equinox.p2.artifact.repository.simpleRepository"); //$NON-NLS-1$ //$NON-NLS-2$
+		repository.setAttribute("version", "1"); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		{
+			Element properties = DOMUtil.createElement(doc, repository, "properties"); //$NON-NLS-1$
+			properties.setAttribute("size", "2"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			Element timestamp = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+			timestamp.setAttribute("name", "p2.timestamp"); //$NON-NLS-1$ //$NON-NLS-2$
+			timestamp.setAttribute("value", StringUtil.toString(this.getDatabaseLastModified())); //$NON-NLS-1$
+			
+			Element compressed = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+			compressed.setAttribute("name", "p2.compressed"); //$NON-NLS-1$ //$NON-NLS-2$
+			compressed.setAttribute("value", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		
+		{
+			Element mappings = DOMUtil.createElement(doc, repository, "mappings"); //$NON-NLS-1$
+			mappings.setAttribute("size", "3"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			Element rule1 = DOMUtil.createElement(doc, mappings, "rule"); //$NON-NLS-1$
+			rule1.setAttribute("filter", "(& (classifier=osgi.bundle))"); //$NON-NLS-1$ //$NON-NLS-2$
+			rule1.setAttribute("output", "${repoUrl}/plugins/${id}_${version}.jar"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			Element rule2 = DOMUtil.createElement(doc, mappings, "rule"); //$NON-NLS-1$
+			rule2.setAttribute("filter", "(& (classifier=binary))"); //$NON-NLS-1$ //$NON-NLS-2$
+			rule2.setAttribute("output", "${repoUrl}/binary/${id}_${version}"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			Element rule3 = DOMUtil.createElement(doc, mappings, "rule"); //$NON-NLS-1$
+			rule3.setAttribute("filter", "(& (classifier=org.eclipse.update.feature))"); //$NON-NLS-1$ //$NON-NLS-2$
+			rule3.setAttribute("output", "${repoUrl}/features/${id}_${version}.jar"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		
+		List<UpdateSiteNSFVFSFile> features = getFeatures();
+		List<UpdateSiteNSFVFSFile> plugins = getPlugins();
+		Element artifacts = DOMUtil.createElement(doc, repository, "artifacts"); //$NON-NLS-1$
+		artifacts.setAttribute("size", StringUtil.toString(features.size() + plugins.size())); //$NON-NLS-1$
+		
+		for(UpdateSiteNSFVFSFile feature : features) {
+			Element artifact = DOMUtil.createElement(doc, artifacts, "artifact"); //$NON-NLS-1$
+			artifact.setAttribute("classifier", "org.eclipse.update.feature"); //$NON-NLS-1$ //$NON-NLS-2$
+			artifact.setAttribute("id", feature.getId()); //$NON-NLS-1$
+			artifact.setAttribute("version", feature.getVersion()); //$NON-NLS-1$
+			
+			Element properties = DOMUtil.createElement(doc, artifact, "properties"); //$NON-NLS-1$
+			properties.setAttribute("size", "3"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			Element artifactSize = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+			artifactSize.setAttribute("name", "artifact.size"); //$NON-NLS-1$ //$NON-NLS-2$
+			artifactSize.setAttribute("value", StringUtil.toString(feature.getSize())); //$NON-NLS-1$
+			
+			Element downloadSize = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+			downloadSize.setAttribute("name", "download.size"); //$NON-NLS-1$ //$NON-NLS-2$
+			downloadSize.setAttribute("value", StringUtil.toString(feature.getSize())); //$NON-NLS-1$
+			
+			Element contentType = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+			contentType.setAttribute("name", "download.contentType"); //$NON-NLS-1$ //$NON-NLS-2$
+			contentType.setAttribute("value", feature.getMimeType()); //$NON-NLS-1$
+		}
+		
+		for(UpdateSiteNSFVFSFile plugin : plugins) {
+			Element artifact = DOMUtil.createElement(doc, artifacts, "artifact"); //$NON-NLS-1$
+			artifact.setAttribute("classifier", "osgi.bundle"); //$NON-NLS-1$ //$NON-NLS-2$
+			artifact.setAttribute("id", plugin.getId()); //$NON-NLS-1$
+			artifact.setAttribute("version", plugin.getVersion()); //$NON-NLS-1$
+			
+			Element properties = DOMUtil.createElement(doc, artifact, "properties"); //$NON-NLS-1$
+			properties.setAttribute("size", "2"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			Element artifactSize = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+			artifactSize.setAttribute("name", "artifact.size"); //$NON-NLS-1$ //$NON-NLS-2$
+			artifactSize.setAttribute("value", StringUtil.toString(plugin.getSize())); //$NON-NLS-1$
+			
+			Element downloadSize = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+			downloadSize.setAttribute("name", "download.size"); //$NON-NLS-1$ //$NON-NLS-2$
+			downloadSize.setAttribute("value", StringUtil.toString(plugin.getSize())); //$NON-NLS-1$
+		}
+		
+		return new XMLDocumentVFSFile(this, this.name + VFS.SEPARATOR + "artifacts.xml", doc); //$NON-NLS-1$
+	}
+	
+	private VFSFile createContentXml() throws XMLException, IOException {
+		org.w3c.dom.Document doc = DOMUtil.createDocument();
+		
+		return new XMLDocumentVFSFile(this, this.name + VFS.SEPARATOR + "content.xml", doc); //$NON-NLS-1$
 	}
 }

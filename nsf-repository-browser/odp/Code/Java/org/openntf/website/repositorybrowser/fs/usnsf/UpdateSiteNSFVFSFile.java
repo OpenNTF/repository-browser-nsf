@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.List;
 
+import org.openntf.website.repositorybrowser.fs.MimeTypeProvider;
+
 import com.ibm.commons.vfs.VFS;
 import com.ibm.commons.vfs.VFSException;
 import com.ibm.commons.vfs.VFSFile;
@@ -18,7 +20,7 @@ import lotus.domino.RichTextItem;
 import util.TempFileInputStream;
 import util.Utils;
 
-public class UpdateSiteNSFVFSFile extends VFSFile {
+public class UpdateSiteNSFVFSFile extends VFSFile implements MimeTypeProvider {
 	public static final String FORM_FEATURE = "fmFeature"; //$NON-NLS-1$
 	public static final String FORM_PLUGIN = "fmPlugin"; //$NON-NLS-1$
 	
@@ -31,10 +33,14 @@ public class UpdateSiteNSFVFSFile extends VFSFile {
 	public static final String ITEM_ID_FEATURE = "feature.id"; //$NON-NLS-1$
 	
 	private long lastModificationDate;
+	private final String id;
+	private final String version;
 	private final Document doc;
 
-	protected UpdateSiteNSFVFSFile(VFS vfs, String name, Document doc) {
+	protected UpdateSiteNSFVFSFile(VFS vfs, String name, String id, String version, Document doc) {
 		super(vfs, name);
+		this.id = id;
+		this.version = version;
 		this.doc = doc;
 	}
 
@@ -117,7 +123,12 @@ public class UpdateSiteNSFVFSFile extends VFSFile {
 		return null;
 	}
 	
-	long getDocLastModified() {
+	@Override
+	public String getMimeType() {
+		return "application/java-archive"; //$NON-NLS-1$
+	}
+	
+	public long getDocLastModified() {
 		try {
 			String form = doc.getItemValueString("Form"); //$NON-NLS-1$
 			String itemName;
@@ -137,6 +148,14 @@ public class UpdateSiteNSFVFSFile extends VFSFile {
 		} catch(NotesException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public String getId() {
+		return id;
+	}
+	
+	public String getVersion() {
+		return version;
 	}
 
 	// *******************************************************************************

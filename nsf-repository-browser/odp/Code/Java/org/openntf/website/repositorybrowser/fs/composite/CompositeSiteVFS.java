@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.openntf.website.repositorybrowser.Constants;
+import org.openntf.website.repositorybrowser.fs.mem.XMLDocumentVFSFile;
+import org.openntf.website.repositorybrowser.fs.mem.MemoryVFSFolder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ProcessingInstruction;
@@ -61,7 +63,7 @@ class CompositeSiteVFS extends VFS {
 	
 	@Override
 	protected VFSFolder doCreateVFSFolder(String folderName) {
-		return new CompositeSiteVFSFolder(this, folderName);
+		return new MemoryVFSFolder(this, folderName);
 	}
 	
 	@Override
@@ -101,11 +103,11 @@ class CompositeSiteVFS extends VFS {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Collection<CompositeSiteVFSFile> getFiles() {
+	private Collection<XMLDocumentVFSFile> getFiles() {
 		Map<String, Object> requestScope = ExtLibUtil.getRequestScope();
-		String cacheKey = getClass().getName() + "_files";
-		return (Collection<CompositeSiteVFSFile>)requestScope.computeIfAbsent(cacheKey, (key) -> {
-			List<CompositeSiteVFSFile> result = new ArrayList<>();
+		String cacheKey = getClass().getName() + "_files"; //$NON-NLS-1$
+		return (Collection<XMLDocumentVFSFile>)requestScope.computeIfAbsent(cacheKey, (key) -> {
+			List<XMLDocumentVFSFile> result = new ArrayList<>();
 			try {
 				result.add(createCompositeContent());
 				result.add(createCompositeArtifacts());
@@ -117,48 +119,48 @@ class CompositeSiteVFS extends VFS {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private CompositeSiteVFSFile createCompositeContent() throws XMLException, IOException {
+	private XMLDocumentVFSFile createCompositeContent() throws XMLException, IOException {
 		Document doc = DOMUtil.createDocument();
 
 		{
-			ProcessingInstruction proc = doc.createProcessingInstruction("compositeMetadataRepository", "version='1.0.0'");
+			ProcessingInstruction proc = doc.createProcessingInstruction("compositeMetadataRepository", "version='1.0.0'"); //$NON-NLS-1$ //$NON-NLS-2$
 			doc.appendChild(proc);
 		}
 
 		{
-			Element repository = doc.createElement("repository");
+			Element repository = doc.createElement("repository"); //$NON-NLS-1$
 			doc.appendChild(repository);
-			repository.setAttribute("name", Translation.translate("appName"));
-			repository.setAttribute("type", "org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository");
-			repository.setAttribute("version", "1.0.0");
+			repository.setAttribute("name", Translation.translate("appName")); //$NON-NLS-1$ //$NON-NLS-2$
+			repository.setAttribute("type", "org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository"); //$NON-NLS-1$ //$NON-NLS-2$
+			repository.setAttribute("version", "1.0.0"); //$NON-NLS-1$ //$NON-NLS-2$
 
-			Element properties = DOMUtil.createElement(doc, repository, "properties");
-			properties.setAttribute("size", "1");
+			Element properties = DOMUtil.createElement(doc, repository, "properties"); //$NON-NLS-1$
+			properties.setAttribute("size", "1"); //$NON-NLS-1$ //$NON-NLS-2$
 			{
-				Element property = DOMUtil.createElement(doc, properties, "property");
-				property.setAttribute("name", "p2.atomic.composite.loading");
-				property.setAttribute("value", "true");
+				Element property = DOMUtil.createElement(doc, properties, "property"); //$NON-NLS-1$
+				property.setAttribute("name", "p2.atomic.composite.loading"); //$NON-NLS-1$ //$NON-NLS-2$
+				property.setAttribute("value", "true"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 
-			Element children = DOMUtil.createElement(doc, repository, "children");
+			Element children = DOMUtil.createElement(doc, repository, "children"); //$NON-NLS-1$
 			AtomicInteger count = new AtomicInteger(0);
 			
 			Constants.getFilesystems()
 				.filter(vfs -> !(vfs instanceof CompositeSiteVFS))
 				.forEach(vfs -> {
 					try {
-						((List<VFSFile>)vfs.getRoot().findFiles("content.jar", true)).stream()
+						((List<VFSFile>)vfs.getRoot().findFiles("content.jar", true)).stream() //$NON-NLS-1$
 							.map(VFSResource::getParent)
 							.forEach(folder -> {
-								Element child = DOMUtil.createElement(doc, children, "child");
-								child.setAttribute("location", vfs.getFolder(folder).getPath());
+								Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
+								child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 								count.incrementAndGet();
 							});
-						((List<VFSFile>)vfs.getRoot().findFiles("content.xml", true)).stream()
+						((List<VFSFile>)vfs.getRoot().findFiles("content.xml", true)).stream() //$NON-NLS-1$
 							.map(VFSResource::getParent)
 							.forEach(folder -> {
-								Element child = DOMUtil.createElement(doc, children, "child");
-								child.setAttribute("location", vfs.getFolder(folder).getPath());
+								Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
+								child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 								count.incrementAndGet();
 							});
 					} catch (VFSException e) {
@@ -166,59 +168,59 @@ class CompositeSiteVFS extends VFS {
 					}
 				});
 
-			children.setAttribute("size", count.toString());
+			children.setAttribute("size", count.toString()); //$NON-NLS-1$
 		}
 		
 		
-		return new CompositeSiteVFSFile(this, "compositeContent.xml", doc);
+		return new XMLDocumentVFSFile(this, "compositeContent.xml", doc); //$NON-NLS-1$
 	}
 	
 	@SuppressWarnings("unchecked")
-	private CompositeSiteVFSFile createCompositeArtifacts() throws XMLException, IOException {
+	private XMLDocumentVFSFile createCompositeArtifacts() throws XMLException, IOException {
 		Document doc = DOMUtil.createDocument();
 
 		{
-			ProcessingInstruction proc = doc.createProcessingInstruction("compositeArtifactRepository", "version='1.0.0'");
+			ProcessingInstruction proc = doc.createProcessingInstruction("compositeArtifactRepository", "version='1.0.0'"); //$NON-NLS-1$ //$NON-NLS-2$
 			doc.appendChild(proc);
 		}
 
 		{
-			Element repository = doc.createElement("repository");
+			Element repository = doc.createElement("repository"); //$NON-NLS-1$
 			doc.appendChild(repository);
-			repository.setAttribute("name", Translation.translate("appName"));
-			repository.setAttribute("type", "org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository");
-			repository.setAttribute("version", "1.0.0");
+			repository.setAttribute("name", Translation.translate("appName")); //$NON-NLS-1$ //$NON-NLS-2$
+			repository.setAttribute("type", "org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository"); //$NON-NLS-1$ //$NON-NLS-2$
+			repository.setAttribute("version", "1.0.0"); //$NON-NLS-1$ //$NON-NLS-2$
 
-			Element properties = DOMUtil.createElement(doc, repository, "properties");
-			properties.setAttribute("size", "0");
+			Element properties = DOMUtil.createElement(doc, repository, "properties"); //$NON-NLS-1$
+			properties.setAttribute("size", "0"); //$NON-NLS-1$ //$NON-NLS-2$
 
-			Element children = DOMUtil.createElement(doc, repository, "children");
+			Element children = DOMUtil.createElement(doc, repository, "children"); //$NON-NLS-1$
 			AtomicInteger count = new AtomicInteger(0);
 			Constants.getFilesystems()
 			.filter(vfs -> !(vfs instanceof CompositeSiteVFS))
 			.forEach(vfs -> {
 				try {
-					((List<VFSFile>)vfs.getRoot().findFiles("artifacts.jar", true)).stream()
+					((List<VFSFile>)vfs.getRoot().findFiles("artifacts.jar", true)).stream() //$NON-NLS-1$
 						.map(VFSResource::getParent)
 						.forEach(folder -> {
-							Element child = DOMUtil.createElement(doc, children, "child");
-							child.setAttribute("location", vfs.getFolder(folder).getPath());
+							Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
+							child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 							count.incrementAndGet();
 						});
-					((List<VFSFile>)vfs.getRoot().findFiles("artifacts.xml", true)).stream()
+					((List<VFSFile>)vfs.getRoot().findFiles("artifacts.xml", true)).stream() //$NON-NLS-1$
 						.map(VFSResource::getParent)
 						.forEach(folder -> {
-							Element child = DOMUtil.createElement(doc, children, "child");
-							child.setAttribute("location", vfs.getFolder(folder).getPath());
+							Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
+							child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 							count.incrementAndGet();
 						});
 				} catch (VFSException e) {
 					throw new RuntimeException(e);
 				}
 			});
-			children.setAttribute("size", count.toString());
+			children.setAttribute("size", count.toString()); //$NON-NLS-1$
 		}
 		
-		return new CompositeSiteVFSFile(this, "compositeArtifacts.xml", doc);
+		return new XMLDocumentVFSFile(this, "compositeArtifacts.xml", doc); //$NON-NLS-1$
 	}
 }

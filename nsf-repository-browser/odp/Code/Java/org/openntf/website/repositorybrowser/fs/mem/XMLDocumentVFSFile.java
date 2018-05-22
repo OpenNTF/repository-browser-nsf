@@ -1,4 +1,4 @@
-package org.openntf.website.repositorybrowser.fs.composite;
+package org.openntf.website.repositorybrowser.fs.mem;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,11 +18,17 @@ import com.ibm.commons.xml.DOMUtil;
 import com.ibm.commons.xml.Format;
 import com.ibm.commons.xml.XMLException;
 
-class CompositeSiteVFSFile extends VFSFile implements MimeTypeProvider {
+/**
+ * An in-memory implementation of a {@link VFSFile} backed by a {@link Document}.
+ * 
+ * @author Jesse Gallagher
+ * @since 2.0.0
+ */
+public class XMLDocumentVFSFile extends VFSFile implements MimeTypeProvider {
 	private final byte[] content;
 	private long lastModificationDate;
 	
-	protected CompositeSiteVFSFile(VFS vfs, String name, Document xmlDoc) throws XMLException, IOException {
+	public XMLDocumentVFSFile(VFS vfs, String name, Document xmlDoc) throws XMLException, IOException {
 		super(vfs, name);
 		
 		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -90,6 +96,6 @@ class CompositeSiteVFSFile extends VFSFile implements MimeTypeProvider {
 
 	@Override
 	public String getMimeType() {
-		return "text/xml";
+		return "text/xml"; //$NON-NLS-1$
 	}
 }

@@ -1,4 +1,4 @@
-package org.openntf.website.repositorybrowser.fs.composite;
+package org.openntf.website.repositorybrowser.fs.mem;
 
 import java.io.File;
 import java.util.Collections;
@@ -7,11 +7,17 @@ import java.util.List;
 import com.ibm.commons.vfs.VFS;
 import com.ibm.commons.vfs.VFSFolder;
 
-class CompositeSiteVFSFolder extends VFSFolder {
+/**
+ * An read-only stub implementation of {@link VFSFoler}.
+ * 
+ * @author Jesse Gallagher
+ * @since 2.0.0
+ */
+public class MemoryVFSFolder extends VFSFolder {
 
 	private long lastModificationDate;
 	
-	protected CompositeSiteVFSFolder(VFS vfs, String path) {
+	public MemoryVFSFolder(VFS vfs, String path) {
 		super(vfs, path);
 	}
 
