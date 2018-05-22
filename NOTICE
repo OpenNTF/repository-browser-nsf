@@ -1,0 +1,6 @@
+Repository Browser NSF
+Copyright 2016-2018 Christian Guedemann, Jesse Gallagher
+
+This project includes the following third-party code:
+
+- Utility classes from org.eclipse.osgi, which is copyright IBM Corporation and others, is licensed under the Eclipse Public License 1.0, and is available from https://github.com/eclipse/rt.equinox.framework/blob/master/bundles/org.eclipse.osgi/supplement

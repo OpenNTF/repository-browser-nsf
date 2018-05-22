@@ -85,6 +85,7 @@
 						<exclude>**/odp/AppProperties/xspdesign.properties</exclude>
 						<exclude>**/odp/WebContent/WEB-INF/faces-config.xml</exclude>
 						<exclude>**/odp/WebContent/WEB-INF/xsp.properties</exclude>
+						<exclude>**/odp/Code/Java/org/openntf/eclipse/**</exclude>
 					</excludes>
 					<properties>
 						<owner>Christian Guedemann, Jesse Gallagher</owner>

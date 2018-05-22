@@ -1,3 +1,18 @@
+/**
+ * Copyright (c) 2018 Christian Guedemann, Jesse Gallagher
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openntf.website.repositorybrowser.fs.usnsf;
 
 import java.io.File;
@@ -16,26 +31,14 @@ import com.ibm.commons.vfs.VFSFile;
 import lotus.domino.Document;
 import lotus.domino.EmbeddedObject;
 import lotus.domino.NotesException;
-import lotus.domino.RichTextItem;
 import util.TempFileInputStream;
 import util.Utils;
 
-public class UpdateSiteNSFVFSFile extends VFSFile implements MimeTypeProvider {
-	public static final String FORM_FEATURE = "fmFeature"; //$NON-NLS-1$
-	public static final String FORM_PLUGIN = "fmPlugin"; //$NON-NLS-1$
-	
-	public static final String ITEM_FILE_FEATURE = "feature.file"; //$NON-NLS-1$
-	public static final String ITEM_FILE_PLUGIN = "plugin.file"; //$NON-NLS-1$
-	
-	public static final String ITEM_MOD_FEATURE = "feature.file.lastModified"; //$NON-NLS-1$
-	public static final String ITEM_MOD_PLUGIN = "plugin.file.lastModified"; //$NON-NLS-1$
-	
-	public static final String ITEM_ID_FEATURE = "feature.id"; //$NON-NLS-1$
-	
+public abstract class UpdateSiteNSFVFSFile extends VFSFile implements MimeTypeProvider {
 	private long lastModificationDate;
 	private final String id;
 	private final String version;
-	private final Document doc;
+	protected final Document doc;
 
 	protected UpdateSiteNSFVFSFile(VFS vfs, String name, String id, String version, Document doc) {
 		super(vfs, name);
@@ -47,7 +50,7 @@ public class UpdateSiteNSFVFSFile extends VFSFile implements MimeTypeProvider {
 	@Override
 	protected InputStream doGetInputStream() throws VFSException {
 		try {
-			EmbeddedObject obj = getFile(doc);
+			EmbeddedObject obj = getFile();
 			try {
 				File tempFile = Files.createTempFile(Utils.getTempDirectory(), obj.getSource(), ".dat").toFile(); //$NON-NLS-1$
 				tempFile.delete();
@@ -70,7 +73,7 @@ public class UpdateSiteNSFVFSFile extends VFSFile implements MimeTypeProvider {
 	@Override
 	protected long doGetSize() throws VFSException {
 		try {
-			EmbeddedObject obj = getFile(doc);
+			EmbeddedObject obj = getFile();
 			try {
 				return obj.getFileSize();
 			} finally {
@@ -128,27 +131,11 @@ public class UpdateSiteNSFVFSFile extends VFSFile implements MimeTypeProvider {
 		return "application/java-archive"; //$NON-NLS-1$
 	}
 	
-	public long getDocLastModified() {
-		try {
-			String form = doc.getItemValueString("Form"); //$NON-NLS-1$
-			String itemName;
-			switch(form) {
-			case FORM_FEATURE:
-				itemName = ITEM_MOD_FEATURE;
-				break;
-			case FORM_PLUGIN:
-				itemName = ITEM_MOD_PLUGIN;
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown document type: " + form); //$NON-NLS-1$
-			}
-			
-			String modString = doc.getItemValueString(itemName);
-			return Long.parseLong(modString, 10);
-		} catch(NotesException e) {
-			throw new RuntimeException(e);
-		}
-	}
+	public abstract long getDocLastModified();
+	
+	// *******************************************************************************
+	// * p2 metadata access
+	// *******************************************************************************
 	
 	public String getId() {
 		return id;
@@ -162,20 +149,5 @@ public class UpdateSiteNSFVFSFile extends VFSFile implements MimeTypeProvider {
 	// * Internal implementation methods
 	// *******************************************************************************
 	
-	private static EmbeddedObject getFile(Document doc) throws NotesException {
-		String form = doc.getItemValueString("Form"); //$NON-NLS-1$
-		String itemName;
-		switch(form) {
-		case FORM_FEATURE:
-			itemName = ITEM_FILE_FEATURE;
-			break;
-		case FORM_PLUGIN:
-			itemName = ITEM_FILE_PLUGIN;
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown document type: " + form); //$NON-NLS-1$
-		}
-		RichTextItem body = (RichTextItem)doc.getFirstItem(itemName);
-		return (EmbeddedObject)body.getEmbeddedObjects().get(0);
-	}
+	protected abstract EmbeddedObject getFile() throws NotesException;
 }
