@@ -68,7 +68,7 @@ public class ContentViewFacade implements Serializable {
 			// Otherwise, fall back to the "path" query param
 			@SuppressWarnings("unchecked")
 			Map<String, String> param = (Map<String, String>)ExtLibUtil.resolveVariable("param");
-			this.path = param.get("path");
+			this.path = StringUtil.toString(param.get("path"));
 		}
 	}
 	
