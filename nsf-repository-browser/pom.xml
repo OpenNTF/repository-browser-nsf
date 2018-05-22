@@ -87,7 +87,7 @@
 						<exclude>**/odp/WebContent/WEB-INF/xsp.properties</exclude>
 					</excludes>
 					<properties>
-						<owner>Christian Güdemann, Jesse Gallagher</owner>
+						<owner>Christian Guedemann, Jesse Gallagher</owner>
 						<copyrightYear>2018</copyrightYear>
 					</properties>
 				</configuration>
