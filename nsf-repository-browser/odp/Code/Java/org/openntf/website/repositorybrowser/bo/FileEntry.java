@@ -105,7 +105,7 @@ public class FileEntry implements Serializable, Comparable<FileEntry> {
 	public int compareTo(FileEntry o) {
 		String thisName = getSortableName();
 		String otherName = o.getSortableName();
-		return thisName.compareTo(otherName);
+		return String.CASE_INSENSITIVE_ORDER.compare(thisName, otherName);
 	}
 
 	@Override
