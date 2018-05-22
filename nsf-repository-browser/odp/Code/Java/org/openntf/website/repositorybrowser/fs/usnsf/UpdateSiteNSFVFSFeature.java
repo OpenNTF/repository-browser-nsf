@@ -47,6 +47,7 @@ public class UpdateSiteNSFVFSFeature extends UpdateSiteNSFVFSFile {
 	public static final String ITEM_LICENSE_URL = "feature.license.url"; //$NON-NLS-1$
 	public static final String ITEM_COPYRIGHT = "feature.copyright"; //$NON-NLS-1$
 	public static final String ITEM_COPYRIGHT_URL = "feature.copyright.url"; //$NON-NLS-1$
+	public static final String ITEM_CATEGORY = "feature.category"; //$NON-NLS-1$
 	
 	public UpdateSiteNSFVFSFeature(VFS vfs, String name, String id, String version, Document doc) {
 		super(vfs, name, id, version, doc);
@@ -128,5 +129,9 @@ public class UpdateSiteNSFVFSFeature extends UpdateSiteNSFVFSFile {
 	
 	public String getCopyrightUrl() throws NotesException {
 		return doc.getItemValueString(ITEM_COPYRIGHT_URL);
+	}
+	
+	public String getCategory() throws NotesException {
+		return doc.getItemValueString(ITEM_CATEGORY);
 	}
 }

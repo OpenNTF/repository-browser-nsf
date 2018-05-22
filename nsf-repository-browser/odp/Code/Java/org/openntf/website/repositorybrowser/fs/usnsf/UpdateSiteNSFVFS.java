@@ -18,7 +18,9 @@ package org.openntf.website.repositorybrowser.fs.usnsf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.openntf.website.repositorybrowser.fs.mem.MemoryVFSFolder;
@@ -386,7 +388,9 @@ class UpdateSiteNSFVFS extends VFS {
 		List<UpdateSiteNSFVFSFeature> features = getFeatures();
 		List<UpdateSiteNSFVFSPlugin> plugins = getPlugins();
 		Element units = DOMUtil.createElement(doc, repository, "units"); //$NON-NLS-1$
-		units.setAttribute("size", StringUtil.toString(features.size() + plugins.size())); //$NON-NLS-1$
+		int unitsSize = features.size() + plugins.size();
+		
+		Map<String, Element> categories = new HashMap<>();
 		
 		for(UpdateSiteNSFVFSFeature feature : features) {
 			Element unit = DOMUtil.createElement(doc, units, "unit"); //$NON-NLS-1$
@@ -504,6 +508,48 @@ class UpdateSiteNSFVFS extends VFS {
 				copyright.setAttribute("url", feature.getCopyrightUrl()); //$NON-NLS-1$
 				copyright.setTextContent(feature.getCopyright());
 			}
+			
+			// Add in a category element if it hasn't been added
+			if(!categories.containsKey(feature.getCategory())) {
+				Element category = DOMUtil.createElement(doc, units, "unit"); //$NON-NLS-1$
+				category.setAttribute("id", database.getReplicaID() + "-" + feature.getCategory()); //$NON-NLS-1$ //$NON-NLS-2$
+				category.setAttribute("version", "1.0.0.21-" + database.getReplicaID()); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				Element catProperties = DOMUtil.createElement(doc, category, "properties"); //$NON-NLS-1$
+				catProperties.setAttribute("size", "2"); //$NON-NLS-1$ //$NON-NLS-2$
+				Element propCatName = DOMUtil.createElement(doc, catProperties, "property"); //$NON-NLS-1$
+				propCatName.setAttribute("name", "org.eclipse.equinox.p2.name"); //$NON-NLS-1$ //$NON-NLS-2$
+				propCatName.setAttribute("value", feature.getCategory()); //$NON-NLS-1$
+				
+				Element propCatCat = DOMUtil.createElement(doc, catProperties, "property"); //$NON-NLS-1$
+				propCatCat.setAttribute("name", "org.eclipse.equinox.p2.type.category"); //$NON-NLS-1$ //$NON-NLS-2$
+				propCatCat.setAttribute("value", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				Element catProvides = DOMUtil.createElement(doc, category, "provides"); //$NON-NLS-1$
+				catProvides.setAttribute("size", "1"); //$NON-NLS-1$ //$NON-NLS-2$
+				Element catProvided = DOMUtil.createElement(doc, catProvides, "provided"); //$NON-NLS-1$
+				catProvided.setAttribute("namespace", "org.eclipse.equinox.p2.iu"); //$NON-NLS-1$ //$NON-NLS-2$
+				catProvided.setAttribute("name", category.getAttribute("id")); //$NON-NLS-1$ //$NON-NLS-2$
+				catProvided.setAttribute("version", category.getAttribute("version")); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				Element catTouchpoint = DOMUtil.createElement(doc, category, "touchpoint"); //$NON-NLS-1$
+				catTouchpoint.setAttribute("id", "null"); //$NON-NLS-1$ //$NON-NLS-2$
+				catTouchpoint.setAttribute("version", "0.0.0"); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				Element catRequires = DOMUtil.createElement(doc, category, "requires"); //$NON-NLS-1$
+				categories.put(feature.getCategory(), catRequires);
+				catRequires.setAttribute("size", "0"); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				unitsSize++;
+			}
+			Element catRequires = categories.get(feature.getCategory());
+			int reqSize = Integer.parseInt(catRequires.getAttribute("size"), 10); //$NON-NLS-1$
+			catRequires.setAttribute("size", StringUtil.toString(reqSize+1)); //$NON-NLS-1$
+			
+			Element req = DOMUtil.createElement(doc, catRequires, "required"); //$NON-NLS-1$
+			req.setAttribute("namespace", "org.eclipse.equinox.p2.iu"); //$NON-NLS-1$ //$NON-NLS-2$
+			req.setAttribute("name", feature.getId() + ".feature.group"); //$NON-NLS-1$ //$NON-NLS-2$
+			req.setAttribute("range", "[" + feature.getVersion() + "," + feature.getVersion() + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		}
 		
 		for(UpdateSiteNSFVFSPlugin plugin : plugins) {
@@ -623,6 +669,9 @@ class UpdateSiteNSFVFS extends VFS {
 				instManifest.setTextContent(plugin.getManifestContent());
 			}
 		}
+		
+
+		units.setAttribute("size", StringUtil.toString(unitsSize)); //$NON-NLS-1$
 		
 		return new XMLDocumentVFSFile(this, this.name + VFS.SEPARATOR + "content.xml", doc); //$NON-NLS-1$
 	}
