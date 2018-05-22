@@ -122,9 +122,7 @@ public class ContentViewFacade implements Serializable {
 				res.setContentLength((int)length);
 				
 				String mimeType;
-				System.out.println("vfsFile is " + vfsFile.getClass());
 				if(vfsFile instanceof MimeTypeProvider) {
-					System.out.println("yay!");
 					mimeType = ((MimeTypeProvider)vfsFile).getMimeType();
 				} else {
 					File systemFile = vfsFile.getSystemFile();
