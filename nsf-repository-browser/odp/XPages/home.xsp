@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom">
-
-	<xp:this.beforeRenderResponse><![CDATA[#{javascript:
-		var path = paramValues.path === null? "" : ""+paramValues.path;
-		if (path.indexOf("../") > -1) {
-			context.redirectToHome();
-		}
-		content.initPath(path);
-	}]]></xp:this.beforeRenderResponse>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom"
+	beforePageLoad="#{content.init}"
+	beforeRenderResponse="#{javascript:content.beforeRenderResponse()}" rendered="#{content.pathDirectory}">
 	
 	<xc:cc_ApplicationLayout>
 		<xp:this.facets>
 			<xp:div xp:key="facetMiddle" styleClass="panel panel-default">
 				<div class="panel-heading">
-					<div class="pull-right">
-						<xp:link text="${translation.directLink}" value="#{content.directLink}"/>
-					</div>
-				
-					<xp:link text="Up" id="back"
-						value="#{content.backURL}" rendered="#{not empty content.backURL}">
+					<xp:link text="${translation.upOneLevel}" value="#{content.backURL}"
+						rendered="#{not empty content.backURL}">
 						<xp:image url="/arrow_up.png"/>
 					</xp:link>
 					&#160;&#160;
@@ -29,7 +19,7 @@
 						<xp:image url="#{file.folder ? '/folder.png' : '/page.png'}"/>
 					</xp:column>
 					<xp:column>
-						<xp:link text="#{file.name}" value="#{file.href}"/>
+						<xp:link text="#{file.name}" value="#{view.pageName}/#{file.href}"/>
 					</xp:column>
 				</xp:dataTable>
 			</xp:div>

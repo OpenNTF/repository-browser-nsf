@@ -1,5 +1,5 @@
 /**
- * Copyright © 2018 Christian Güdemann, Jesse Gallagher
+ * Copyright (c) 2018 Christian Gueemann, Jesse Gallagher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,19 +45,36 @@ public class FileEntry implements Serializable, Comparable<FileEntry> {
 	 * @since 1.1
 	 */
 	public static FileEntry fromPath(Path path, Path currentPath) {
-		
 		Path relativePath = Constants.REPOSITORY_BASE_DIR.relativize(path);
 		
 		FileEntry entry = new FileEntry();
 		if (Files.isDirectory(path)) {
 			entry.folder = true;
-			entry.href = "/home.xsp?path=" + relativePath.toString().replace(File.separatorChar, '/') + "/"; //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
 			entry.folder = false;
-			entry.href = "/.ibmxspres/domino/repository/" + relativePath.toString().replace(File.separatorChar, '/'); //$NON-NLS-1$
 		}
+		entry.href = relativePath.toString().replace(File.separatorChar, '/'); //$NON-NLS-1$ //$NON-NLS-2$
 		entry.name = path.getFileName().toString();
 		return entry;
+	}
+	
+	/**
+	 * Constructs a new, empty file entry.
+	 */
+	public FileEntry() {
+		
+	}
+	/**
+	 * Constructs a file entry from the provided properties.
+	 * 
+	 * @param name the base name of the file, e.g. "foo.xml"
+	 * @param folder whether or not the file is intended to represent a directory
+	 * @param path the relative path of the file, e.g. "bar/foo.xml"
+	 */
+	public FileEntry(String name, boolean folder, String path) {
+		this.name = name;
+		this.folder = folder;
+		this.href = path;
 	}
 	
 	public String getName() {
