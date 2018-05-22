@@ -17,7 +17,16 @@ package org.openntf.website.repositorybrowser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.openntf.website.repositorybrowser.fs.FilesystemFactory;
+
+import com.ibm.commons.vfs.VFS;
+import com.ibm.xsp.application.ApplicationEx;
 import com.ibm.xsp.extlib.util.ExtLibUtil;
 
 import lotus.domino.NotesException;
@@ -35,5 +44,19 @@ public enum Constants {
 		} catch(NotesException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Stream<VFS> getFilesystems() {
+		Map<String, Object> requestScope = ExtLibUtil.getRequestScope();
+		String cacheKey = Constants.class.getName() + "_filesystems";
+		return ((List<VFS>)requestScope.computeIfAbsent(cacheKey, (key) -> {
+			ApplicationEx app = ApplicationEx.getInstance();
+			List<FilesystemFactory> factories = (List<FilesystemFactory>)app.findServices(FilesystemFactory.EXTENSION_POINT);
+			return factories.stream()
+				.map(FilesystemFactory::getFilesystems)
+				.flatMap(Function.identity())
+				.collect(Collectors.toList());
+		})).stream();
 	}
 }

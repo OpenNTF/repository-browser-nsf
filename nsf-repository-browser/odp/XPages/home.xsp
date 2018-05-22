@@ -18,7 +18,7 @@
 						<xp:image url="#{file.folder ? '/folder.png' : '/page.png'}"/>
 					</xp:column>
 					<xp:column>
-						<xp:link text="#{file.name}" value="#{view.pageName}/#{file.href}"/>
+						<xp:link text="#{file.name}" value="#{view.pageName}/#{file.path}"/>
 					</xp:column>
 				</xp:dataTable>
 			</xp:div>

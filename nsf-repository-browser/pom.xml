@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openntf</groupId>
 	<artifactId>repository-browser-nsf</artifactId>
-	<version>1.2.1</version>
+	<version>2.0.0</version>
 	<packaging>domino-nsf</packaging>
 	
 	<name>Repository Browser</name>
@@ -85,6 +85,7 @@
 						<exclude>**/odp/AppProperties/xspdesign.properties</exclude>
 						<exclude>**/odp/WebContent/WEB-INF/faces-config.xml</exclude>
 						<exclude>**/odp/WebContent/WEB-INF/xsp.properties</exclude>
+						<exclude>**/odp/Code/Java/org/openntf/eclipse/**</exclude>
 					</excludes>
 					<properties>
 						<owner>Christian Guedemann, Jesse Gallagher</owner>
