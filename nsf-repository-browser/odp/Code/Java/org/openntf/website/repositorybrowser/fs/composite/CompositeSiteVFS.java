@@ -66,7 +66,6 @@ class CompositeSiteVFS extends VFS {
 	
 	@Override
 	protected VFSFile doCreateVFSFile(String fileName) {
-		
 		throw new UnsupportedOperationException();
 	}
 	
