@@ -92,7 +92,7 @@ public class ContentViewFacade implements Serializable {
 		VFSResource file = getResource();
 		
 		// If it's a directory, let the XPage handle rendering
-		if(file.isFolder()) {
+		if(file != null && file.isFolder()) {
 			return;
 		}
 
@@ -102,7 +102,7 @@ public class ContentViewFacade implements Serializable {
 		XspHttpServletResponse res = (XspHttpServletResponse)facesContext.getExternalContext().getResponse();
 
 		try(ServletOutputStream os = res.getOutputStream()) {
-			if(!file.isFile() || !file.exists()) {
+			if(file == null || !file.isFile() || !file.exists()) {
 				// If it's not a regular file, throw a 404
 				res.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				res.setContentType("text/plain"); //$NON-NLS-1$
