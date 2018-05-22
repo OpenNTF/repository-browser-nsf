@@ -99,7 +99,7 @@ public class FileEntry implements Serializable, Comparable<FileEntry> {
 	}
 
 	protected String getSortableName() {
-		return this.folder ? "AAA":"ZZZ" + this.name; //$NON-NLS-1$ //$NON-NLS-2$
+		return (this.folder ? "AAA":"ZZZ") + this.name; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public int compareTo(FileEntry o) {
