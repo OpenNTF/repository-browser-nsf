@@ -129,9 +129,13 @@ public class ContentViewFacade implements Serializable {
 	
 	/**
 	 * @return {@code true} if the path provided to the page context is
-	 *        a regular file; {@code false} otherwise
+	 *        a directory; {@code false} otherwise
 	 */
 	public boolean isPathDirectory() {
+		if(StringUtil.isEmpty(path)) {
+			return true;
+		}
+		
 		Path dataPath = getDataPath();
 		return Files.isDirectory(dataPath);
 	}
