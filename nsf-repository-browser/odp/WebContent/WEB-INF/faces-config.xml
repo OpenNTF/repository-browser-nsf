@@ -2,8 +2,7 @@
 <faces-config>
   <managed-bean id="content">
     <managed-bean-name>content</managed-bean-name>
-    <managed-bean-class>org.openntf.website.repositorybrowser.api.ContentViewFacade
-		</managed-bean-class>
+    <managed-bean-class>org.openntf.website.repositorybrowser.api.ContentViewFacade</managed-bean-class>
     <managed-bean-scope>view</managed-bean-scope>
   </managed-bean>
   <managed-bean>

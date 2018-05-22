@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom"
 	viewState="nostate" beforePageLoad="#{content.init}"
-	beforeRenderResponse="#{javascript:content.beforeRenderResponse()}" rendered="${content.pathDirectory}">
-	
+	beforeRenderResponse="#{javascript:content.beforeRenderResponse()}" rendered="#{content.pageRendered}">
 	<xc:cc_ApplicationLayout>
 		<xp:this.facets>
 			<xp:div xp:key="facetMiddle" styleClass="panel panel-default">
@@ -14,7 +13,7 @@
 					&#160;&#160;
 					<xp:text value="#{translation.pathLabel}#{content.path}"/>
 				</div>
-				<xp:dataTable id="files" rows="100000" var="file" value="${content.entries}">
+				<xp:dataTable id="files" rows="100000" var="file" value="#{content.entries}">
 					<xp:column>
 						<xp:image url="#{file.folder ? '/folder.png' : '/page.png'}"/>
 					</xp:column>
