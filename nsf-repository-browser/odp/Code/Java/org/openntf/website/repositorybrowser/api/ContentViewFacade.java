@@ -70,7 +70,7 @@ public class ContentViewFacade implements Serializable {
 		String requestUrl = req.getRequestURL().toString();
 		if(!requestUrl.startsWith(url)) {
 			res.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-			res.addHeader("Location", url);
+			res.addHeader("Location", url); //$NON-NLS-1$
 			redirecting = true;
 			return;
 		}
@@ -83,8 +83,8 @@ public class ContentViewFacade implements Serializable {
 		} else {
 			// Otherwise, fall back to the "path" query param
 			@SuppressWarnings("unchecked")
-			Map<String, String> param = (Map<String, String>)ExtLibUtil.resolveVariable("param");
-			this.path = StringUtil.toString(param.get("path"));
+			Map<String, String> param = (Map<String, String>)ExtLibUtil.resolveVariable("param"); //$NON-NLS-1$
+			this.path = StringUtil.toString(param.get("path")); //$NON-NLS-1$
 		}
 	}
 	
@@ -98,15 +98,15 @@ public class ContentViewFacade implements Serializable {
 
 		FacesContext facesContext = FacesContext.getCurrentInstance();
 		HttpServletRequest req = (HttpServletRequest)facesContext.getExternalContext().getRequest();
-		boolean isHead = "HEAD".equals(req.getMethod());
+		boolean isHead = "HEAD".equals(req.getMethod()); //$NON-NLS-1$
 		XspHttpServletResponse res = (XspHttpServletResponse)facesContext.getExternalContext().getResponse();
 
 		try(ServletOutputStream os = res.getOutputStream()) {
 			if(!file.isFile() || !file.exists()) {
 				// If it's not a regular file, throw a 404
 				res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-				res.setContentType("text/plain");
-				String message = "Not found: " + path;
+				res.setContentType("text/plain"); //$NON-NLS-1$
+				String message = "Not found: " + path; //$NON-NLS-1$
 				res.setContentLength(message.length());
 				if(!isHead) {
 					os.print(message);
@@ -117,7 +117,7 @@ public class ContentViewFacade implements Serializable {
 				VFSFile vfsFile = (VFSFile)file;
 				long length = vfsFile.getSize();
 				if(length > Integer.MAX_VALUE) {
-					throw new IllegalStateException("File is too large to stream: " + path);
+					throw new IllegalStateException("File is too large to stream: " + path); //$NON-NLS-1$
 				}
 				res.setContentLength((int)length);
 				
@@ -130,7 +130,7 @@ public class ContentViewFacade implements Serializable {
 						Path systemPath = systemFile.toPath();
 						mimeType = Files.probeContentType(systemPath);
 					} else {
-						mimeType = "application/octet-stream";
+						mimeType = "application/octet-stream"; //$NON-NLS-1$
 					}
 				}
 				res.setContentType(mimeType);
@@ -163,7 +163,7 @@ public class ContentViewFacade implements Serializable {
 		}
 		
 		VFSResource res = getResource();
-		return res.isFolder();
+		return res != null && res.isFolder();
 	}
 
 	public List<VFSResource> getEntries() throws Exception {
@@ -225,7 +225,7 @@ public class ContentViewFacade implements Serializable {
 		try {
 			VFSFolder folder = vfs.getRoot();
 			VFSResource res = folder;
-			for(String pathBit : StringUtil.splitString(path, '/')) {
+			for(String pathBit : StringUtil.splitString(path, VFS.SEPARATOR)) {
 				if(StringUtil.isNotEmpty(path)) {
 					res = folder.findResource(pathBit, false);
 					if(res != null && res.isFolder()) {

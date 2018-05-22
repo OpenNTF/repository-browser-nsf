@@ -1,2 +1,3 @@
 org.openntf.website.repositorybrowser.fs.LocalFilesystemFactory
 org.openntf.website.repositorybrowser.fs.composite.CompositeSiteFilesystemFactory
+org.openntf.website.repositorybrowser.fs.usnsf.UpdateSiteNSFFilesystemFactory
