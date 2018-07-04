@@ -43,8 +43,9 @@ public class XMLDocumentVFSFile extends VFSFile implements MimeTypeProvider {
 	private final byte[] content;
 	private long lastModificationDate;
 	
-	public XMLDocumentVFSFile(VFS vfs, String name, Document xmlDoc) throws XMLException, IOException {
+	public XMLDocumentVFSFile(VFS vfs, String name, Document xmlDoc, long lastModificationDate) throws XMLException, IOException {
 		super(vfs, name);
+		this.lastModificationDate = lastModificationDate;
 		
 		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			DOMUtil.serialize(baos, xmlDoc, Format.defaultFormat);

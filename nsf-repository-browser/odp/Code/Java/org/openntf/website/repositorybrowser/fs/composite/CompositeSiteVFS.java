@@ -61,7 +61,11 @@ class CompositeSiteVFS extends VFS {
 	protected void doReadEntries(VFS vfs, String path, List result) {
 		for(VFSFile file : getFiles()) {
 			if(this.isAccepted(file)) {
-				result.add(new CompositeSiteFileEntry(this, file, System.currentTimeMillis()));
+				try {
+					result.add(new CompositeSiteFileEntry(this, file, file.getLastModificationDate()));
+				} catch (VFSException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
@@ -88,17 +92,30 @@ class CompositeSiteVFS extends VFS {
 	
 	@Override
 	protected FolderEntry doCreateFolderEntry(VFSFolder folder) {
-		return new CompositeSiteFolderEntry(this, folder, System.currentTimeMillis());
+		try {
+			return new CompositeSiteFolderEntry(this, folder, folder.getLastModificationDate());
+		} catch (VFSException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override
 	protected FileEntry doCreateFileEntry(VFSFile file) {
-		return new CompositeSiteFileEntry(this, file, System.currentTimeMillis());
+		try {
+			return new CompositeSiteFileEntry(this, file, file.getLastModificationDate());
+		} catch (VFSException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	protected void doClose() {
 		// NOP
+	}
+	
+	@Override
+	public boolean hasEntryCache() {
+		return false;
 	}
 	
 	// *******************************************************************************
@@ -136,6 +153,7 @@ class CompositeSiteVFS extends VFS {
 	@SuppressWarnings("unchecked")
 	private XMLDocumentVFSFile createCompositeContent() throws XMLException, IOException {
 		Document doc = DOMUtil.createDocument();
+		final long[] lastMod = new long[] { 0 };
 
 		{
 			ProcessingInstruction proc = doc.createProcessingInstruction("compositeMetadataRepository", "version='1.0.0'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -167,6 +185,12 @@ class CompositeSiteVFS extends VFS {
 						((List<VFSFile>)vfs.getRoot().findFiles("content.jar", true)).stream() //$NON-NLS-1$
 							.map(VFSResource::getParent)
 							.forEach(folder -> {
+								try {
+									lastMod[0] = Math.max(lastMod[0], folder.getLastModificationDate());
+								} catch (VFSException e) {
+									throw new RuntimeException(e);
+								}
+								
 								Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
 								child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 								count.incrementAndGet();
@@ -174,6 +198,12 @@ class CompositeSiteVFS extends VFS {
 						((List<VFSFile>)vfs.getRoot().findFiles("content.xml", true)).stream() //$NON-NLS-1$
 							.map(VFSResource::getParent)
 							.forEach(folder -> {
+								try {
+									lastMod[0] = Math.max(lastMod[0], folder.getLastModificationDate());
+								} catch (VFSException e) {
+									throw new RuntimeException(e);
+								}
+								
 								Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
 								child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 								count.incrementAndGet();
@@ -187,12 +217,13 @@ class CompositeSiteVFS extends VFS {
 		}
 		
 		
-		return new XMLDocumentVFSFile(this, "compositeContent.xml", doc); //$NON-NLS-1$
+		return new XMLDocumentVFSFile(this, "compositeContent.xml", doc, lastMod[0]); //$NON-NLS-1$
 	}
 	
 	@SuppressWarnings("unchecked")
 	private XMLDocumentVFSFile createCompositeArtifacts() throws XMLException, IOException {
 		Document doc = DOMUtil.createDocument();
+		final long[] lastMod = new long[] { 0 };
 
 		{
 			ProcessingInstruction proc = doc.createProcessingInstruction("compositeArtifactRepository", "version='1.0.0'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -218,6 +249,12 @@ class CompositeSiteVFS extends VFS {
 					((List<VFSFile>)vfs.getRoot().findFiles("artifacts.jar", true)).stream() //$NON-NLS-1$
 						.map(VFSResource::getParent)
 						.forEach(folder -> {
+							try {
+								lastMod[0] = Math.max(lastMod[0], folder.getLastModificationDate());
+							} catch (VFSException e) {
+								throw new RuntimeException(e);
+							}
+							
 							Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
 							child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 							count.incrementAndGet();
@@ -225,6 +262,12 @@ class CompositeSiteVFS extends VFS {
 					((List<VFSFile>)vfs.getRoot().findFiles("artifacts.xml", true)).stream() //$NON-NLS-1$
 						.map(VFSResource::getParent)
 						.forEach(folder -> {
+							try {
+								lastMod[0] = Math.max(lastMod[0], folder.getLastModificationDate());
+							} catch (VFSException e) {
+								throw new RuntimeException(e);
+							}
+							
 							Element child = DOMUtil.createElement(doc, children, "child"); //$NON-NLS-1$
 							child.setAttribute("location", vfs.getFolder(folder).getPath()); //$NON-NLS-1$
 							count.incrementAndGet();
@@ -236,6 +279,6 @@ class CompositeSiteVFS extends VFS {
 			children.setAttribute("size", count.toString()); //$NON-NLS-1$
 		}
 		
-		return new XMLDocumentVFSFile(this, "compositeArtifacts.xml", doc); //$NON-NLS-1$
+		return new XMLDocumentVFSFile(this, "compositeArtifacts.xml", doc, lastMod[0]); //$NON-NLS-1$
 	}
 }

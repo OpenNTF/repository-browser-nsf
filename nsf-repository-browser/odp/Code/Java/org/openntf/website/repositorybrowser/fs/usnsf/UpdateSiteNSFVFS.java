@@ -270,6 +270,7 @@ class UpdateSiteNSFVFS extends VFS {
 	
 	private VFSFile createArtifactsXml() throws XMLException, IOException, DOMException, NotesException, VFSException {
 		org.w3c.dom.Document doc = DOMUtil.createDocument();
+		long lastMod = 0;
 		
 		{
 			ProcessingInstruction proc = doc.createProcessingInstruction("artifactRepository", "version='1.1.0'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -317,6 +318,8 @@ class UpdateSiteNSFVFS extends VFS {
 		artifacts.setAttribute("size", StringUtil.toString(features.size() + plugins.size())); //$NON-NLS-1$
 		
 		for(UpdateSiteNSFVFSFile feature : features) {
+			lastMod = Math.max(lastMod, feature.getDocLastModified());
+			
 			Element artifact = DOMUtil.createElement(doc, artifacts, "artifact"); //$NON-NLS-1$
 			artifact.setAttribute("classifier", "org.eclipse.update.feature"); //$NON-NLS-1$ //$NON-NLS-2$
 			artifact.setAttribute("id", feature.getId()); //$NON-NLS-1$
@@ -339,6 +342,8 @@ class UpdateSiteNSFVFS extends VFS {
 		}
 		
 		for(UpdateSiteNSFVFSFile plugin : plugins) {
+			lastMod = Math.max(lastMod, plugin.getDocLastModified());
+			
 			Element artifact = DOMUtil.createElement(doc, artifacts, "artifact"); //$NON-NLS-1$
 			artifact.setAttribute("classifier", "osgi.bundle"); //$NON-NLS-1$ //$NON-NLS-2$
 			artifact.setAttribute("id", plugin.getId()); //$NON-NLS-1$
@@ -356,11 +361,12 @@ class UpdateSiteNSFVFS extends VFS {
 			downloadSize.setAttribute("value", StringUtil.toString(plugin.getSize())); //$NON-NLS-1$
 		}
 		
-		return new XMLDocumentVFSFile(this, this.name + VFS.SEPARATOR + "artifacts.xml", doc); //$NON-NLS-1$
+		return new XMLDocumentVFSFile(this, this.name + VFS.SEPARATOR + "artifacts.xml", doc, lastMod); //$NON-NLS-1$
 	}
 	
 	private VFSFile createContentXml() throws XMLException, IOException, DOMException, NotesException {
 		org.w3c.dom.Document doc = DOMUtil.createDocument();
+		long lastMod = 0;
 		
 		{
 			ProcessingInstruction proc = doc.createProcessingInstruction("metadataRepository", "version='1.1.0'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -393,6 +399,8 @@ class UpdateSiteNSFVFS extends VFS {
 		Map<String, Element> categories = new HashMap<>();
 		
 		for(UpdateSiteNSFVFSFeature feature : features) {
+			lastMod = Math.max(lastMod, feature.getDocLastModified());
+			
 			Element unit = DOMUtil.createElement(doc, units, "unit"); //$NON-NLS-1$
 			unit.setAttribute("id", feature.getId() + ".feature.group"); //$NON-NLS-1$ //$NON-NLS-2$
 			unit.setAttribute("version", feature.getVersion()); //$NON-NLS-1$
@@ -553,6 +561,8 @@ class UpdateSiteNSFVFS extends VFS {
 		}
 		
 		for(UpdateSiteNSFVFSPlugin plugin : plugins) {
+			lastMod = Math.max(lastMod, plugin.getDocLastModified());
+			
 			Element unit = DOMUtil.createElement(doc, units, "unit"); //$NON-NLS-1$
 			unit.setAttribute("id", plugin.getId()); //$NON-NLS-1$
 			unit.setAttribute("version", plugin.getVersion()); //$NON-NLS-1$
@@ -673,6 +683,6 @@ class UpdateSiteNSFVFS extends VFS {
 
 		units.setAttribute("size", StringUtil.toString(unitsSize)); //$NON-NLS-1$
 		
-		return new XMLDocumentVFSFile(this, this.name + VFS.SEPARATOR + "content.xml", doc); //$NON-NLS-1$
+		return new XMLDocumentVFSFile(this, this.name + VFS.SEPARATOR + "content.xml", doc, lastMod); //$NON-NLS-1$
 	}
 }
