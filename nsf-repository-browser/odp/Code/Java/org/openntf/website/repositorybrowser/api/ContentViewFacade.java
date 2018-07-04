@@ -113,8 +113,19 @@ public class ContentViewFacade implements Serializable {
 				}
 			} else {
 				// If all is good, stream the file
-			
 				VFSFile vfsFile = (VFSFile)file;
+				long lastMod = vfsFile.getLastModificationDate();
+				lastMod = lastMod / 1000 * 1000; // Round because the spec only includes second precision
+				res.addDateHeader("Last-Modified", lastMod); //$NON-NLS-1$
+				
+				long modSince = req.getDateHeader("If-Modified-Since"); //$NON-NLS-1$
+				modSince = modSince / 1000 * 1000; // Should already be second precision, but just in case
+				// Check against the VFS file to see if we need to stream it at all
+				if(modSince > -1 && lastMod <= modSince) {
+					res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+					return;
+				}
+			
 				long length = vfsFile.getSize();
 				if(length > Integer.MAX_VALUE) {
 					throw new IllegalStateException("File is too large to stream: " + path); //$NON-NLS-1$
