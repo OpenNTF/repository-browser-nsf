@@ -65,6 +65,10 @@
 				<artifactId>nsfodp-maven-plugin</artifactId>
 				<version>1.4.0</version>
 				<extensions>true</extensions>
+				
+				<configuration>
+					<compilerLevel>1.8</compilerLevel>
+				</configuration>
 			</plugin>
 
 			<plugin>
