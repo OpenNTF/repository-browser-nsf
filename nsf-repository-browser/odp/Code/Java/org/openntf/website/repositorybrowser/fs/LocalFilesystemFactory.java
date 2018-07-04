@@ -15,6 +15,7 @@
  */
 package org.openntf.website.repositorybrowser.fs;
 
+import java.nio.file.Files;
 import java.util.stream.Stream;
 
 import org.openntf.website.repositorybrowser.Constants;
@@ -28,9 +29,13 @@ public class LocalFilesystemFactory implements FilesystemFactory {
 	@Override
 	public Stream<VFS> getFilesystems() {
 		try {
-			return Stream.of(
-				new FileVFS(Constants.REPOSITORY_BASE_DIR.toString())
-			);
+			if(Files.isDirectory(Constants.REPOSITORY_BASE_DIR)) {
+				return Stream.of(
+					new FileVFS(Constants.REPOSITORY_BASE_DIR.toString())
+				);
+			} else {
+				return Stream.empty();
+			}
 		} catch (VFSException e) {
 			throw new RuntimeException(e);
 		}
