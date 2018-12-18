@@ -6,6 +6,10 @@
 		<xp:this.facets>
 			<xp:div xp:key="facetMiddle" styleClass="panel panel-default">
 				<div class="panel-heading">
+					<div class="pull-right">
+						<xp:link value="#{view.pageName}/#{content.path}.zip" text="${translation.download}"/>
+					</div>
+				
 					<xp:link text="${translation.upOneLevel}" value="${content.backURL}"
 						loaded="${not empty content.backURL}">
 						<xp:image url="/arrow_up.png"/>

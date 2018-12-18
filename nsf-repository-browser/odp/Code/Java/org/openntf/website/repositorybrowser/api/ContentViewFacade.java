@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -28,6 +29,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -94,6 +97,15 @@ public class ContentViewFacade implements Serializable {
 		// If it's a directory, let the XPage handle rendering
 		if(file != null && file.isFolder()) {
 			return;
+		}
+		
+		// If it's null, they might be requesting a ZIP of a folder
+		if(file == null && path.endsWith(".zip")) {
+			VFSResource dir = getResource(path.substring(0, path.length()-4));
+			if(dir != null && dir.isDirectory()) {
+				sendZip((VFSFolder)dir);
+				return;
+			}
 		}
 
 		FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -172,9 +184,23 @@ public class ContentViewFacade implements Serializable {
 		if(StringUtil.isEmpty(path)) {
 			return true;
 		}
+		if(isZipDownload()) {
+			return false;
+		}
 		
 		VFSResource res = getResource();
 		return res != null && res.isFolder();
+	}
+	
+	private boolean isZipDownload() {
+		VFSResource file = getResource();
+		if(file == null && path.endsWith(".zip")) {
+			VFSResource dir = getResource(path.substring(0, path.length()-4));
+			if(dir != null && dir.isDirectory()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public List<VFSResource> getEntries() throws Exception {
@@ -210,6 +236,10 @@ public class ContentViewFacade implements Serializable {
 	// *******************************************************************************
 
 	private VFSResource getResource() {
+		return getResource(this.path);
+	}
+	
+	private VFSResource getResource(String path) {
 		return Constants.getFilesystems()
 			.map(vfs -> getResource(vfs, path))
 			.filter(Objects::nonNull)
@@ -248,6 +278,59 @@ public class ContentViewFacade implements Serializable {
 			return res;
 		} catch (VFSException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	
+	private void sendZip(VFSFolder folder) throws IOException, VFSException {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		XspHttpServletResponse res = (XspHttpServletResponse)facesContext.getExternalContext().getResponse();
+		res.disableXspCache();
+		
+		try(ServletOutputStream os = res.getOutputStream()) {
+			// Stream the dir contents
+			res.setContentType("application/zip");
+			res.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(folder.getName(), "UTF-8").replace("+", " ") + ".zip\"");
+			try(ZipOutputStream zos = new ZipOutputStream(os)) {
+				for(VFSResource resource : findResources(folder)) {
+					if(resource.isDirectory()) {
+						sendFolder((VFSFolder)resource, zos);
+					} else if(resource.isFile()) {
+						sendFile((VFSFile)resource, zos);
+					}
+				}
+				zos.finish();
+			}
+		} catch(Throwable t) {
+			t.printStackTrace();
+			throw t;
+		} finally {
+			facesContext.responseComplete();
+		}
+	}
+	
+	private void sendFolder(VFSFolder folder, ZipOutputStream os) throws IOException, VFSException {
+		// Add an entry for the folder
+		ZipEntry entry = new ZipEntry(folder.getPath().substring(path.length()-3));
+		os.putNextEntry(entry);
+		
+		for(VFSResource resource : findResources(folder)) {
+			if(resource.isDirectory()) {
+				sendFolder((VFSFolder)resource, os);
+			} else if(resource.isFile()) {
+				sendFile((VFSFile)resource, os);
+			}
+		}
+	}
+	
+	private void sendFile(VFSFile file, ZipOutputStream os) throws IOException, VFSException {
+		// Start the entry
+		ZipEntry entry = new ZipEntry(file.getPath().substring(path.length()-3));
+		entry.setSize(file.getSize());
+		entry.setTime(file.getLastModificationDate());
+		os.putNextEntry(entry);
+		
+		try(InputStream is = file.getInputStream()) {
+			StreamUtil.copyStream(is, os);
 		}
 	}
 }

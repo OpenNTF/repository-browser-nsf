@@ -245,7 +245,7 @@ class UpdateSiteNSFVFS extends VFS {
 					if(entry.isDocument()) {
 						List<?> columnValues = entry.getColumnValues();
 						
-						boolean enabled = (double)columnValues.get(0) == ICON_ENABLED;
+						boolean enabled = (Double)columnValues.get(0) == ICON_ENABLED;
 						String name = StringUtil.toString(columnValues.get(4));
 						if(enabled && StringUtil.isNotEmpty(name)) {
 							String version = StringUtil.toString(columnValues.get(5));
