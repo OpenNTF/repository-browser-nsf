@@ -22,3 +22,5 @@ edu.umd.cs.findbugs.core.prefs
 .settings/
 .classpath
 .project
+
+*.versionsBackup
