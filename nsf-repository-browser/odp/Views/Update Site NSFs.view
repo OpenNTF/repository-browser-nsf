@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<note xmlns="http://www.lotus.com/dxl" class="view">
+<note class="view" xmlns="http://www.lotus.com/dxl">
   <item name="$FormulaClass" sign="true">
     <text>1</text>
   </item>
@@ -9,7 +9,7 @@
   <item name="$Index" sign="true">
     <text/>
   </item>
-  <item name="$Formula" summary="true" sign="true">
+  <item name="$Formula" sign="true" summary="true">
     <formula compiled="true">
 WgAFACYAIQAEAAQABAAJAAQATmFtZVBhdGgkQ29uZmxpY3QkUkVGAAQABAAAACQABQAEAEZvcm0B
 AA8AVXBkYXRlIFNpdGUgTlNGAAoCAwAHAAoABAAJTDFT
@@ -20,7 +20,7 @@ AA8AVXBkYXRlIFNpdGUgTlNGAAoCAwAHAAoABAAJTDFT
 HAACAABEgGYAAAAEAABmAAQABABOYW1lUGF0aA==
 </rawitemdata>
   </item>
-  <item name="$ViewFormat" summary="true" sign="true">
+  <item name="$ViewFormat" sign="true" summary="true">
     <rawitemdata type="5">
 AQACAAIACAAAAFZDAQAEAAQAAAAAAFAAAQAACgAAAAAAAAAAAAICAAAAVkMBAAQABAAAAAAAUAAB
 AAAKAAAAAAAAAAAAAgIAAABOYW1lTmFtZVBhdGhQYXRoJgABAAAAAQEACQEAAAoBAQ4KAAABAK0r
@@ -34,6 +34,6 @@ AAgAAAAAAAEA
     <text/>
   </item>
   <item name="$Flags">
-    <text>PY</text>
+    <text>Y</text>
   </item>
 </note>

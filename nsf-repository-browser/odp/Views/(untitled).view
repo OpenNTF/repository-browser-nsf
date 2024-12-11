@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<note xmlns="http://www.lotus.com/dxl" default="true" class="view">
+<note class="view" default="true" xmlns="http://www.lotus.com/dxl">
   <item name="$TITLE">
     <text/>
   </item>

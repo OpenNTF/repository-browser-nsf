@@ -7,7 +7,7 @@
 			<xp:div xp:key="facetMiddle" styleClass="panel panel-default">
 				<div class="panel-heading">
 					<div class="pull-right">
-						<xp:link value="#{view.pageName}/#{content.path}.zip" text="${translation.download}"/>
+						<xp:link value="#{view.pageName}/#{content.path}.zip" text="${translation.download}" rendered="#{not empty content.path}"/>
 					</div>
 				
 					<xp:link text="${translation.upOneLevel}" value="${content.backURL}"

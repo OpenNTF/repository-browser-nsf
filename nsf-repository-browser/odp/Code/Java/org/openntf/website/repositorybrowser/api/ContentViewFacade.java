@@ -92,6 +92,10 @@ public class ContentViewFacade implements Serializable {
 	}
 	
 	public void beforeRenderResponse() throws IOException, XMLException, VFSException {
+		if(StringUtil.isEmpty(this.path) || "/".equals(this.path)) {
+			return;
+		}
+		
 		VFSResource file = getResource();
 		
 		// If it's a directory, let the XPage handle rendering
@@ -264,18 +268,29 @@ public class ContentViewFacade implements Serializable {
 	 */
 	private static VFSResource getResource(VFS vfs, String path) {
 		try {
-			VFSFolder folder = vfs.getRoot();
-			VFSResource res = folder;
-			for(String pathBit : StringUtil.splitString(path, VFS.SEPARATOR)) {
-				if(StringUtil.isNotEmpty(path)) {
-					res = folder.findResource(pathBit, false);
-					if(res != null && res.isFolder()) {
-						folder = (VFSFolder)res;
-					}
+			VFSFolder root = vfs.getRoot();
+			if("/".equals(path)) {
+				return root;
+			}
+			
+			String[] pathBits = StringUtil.splitString(path, VFS.SEPARATOR);
+			if(pathBits.length == 0) {
+				return root;
+			}
+			
+			// Drill down to the containing folder
+			VFSFolder folder = root;
+			for(int i = 0; i < pathBits.length-1; i++) {
+				VFSResource res = folder.findResource(pathBits[i], false);
+				if(res == null || !res.isFolder()) {
+					// Then the line ends here
+					return null;
+				} else {
+					folder = (VFSFolder)res;
 				}
 			}
 			
-			return res;
+			return folder.findResource(pathBits[pathBits.length-1], false);
 		} catch (VFSException e) {
 			throw new RuntimeException(e);
 		}

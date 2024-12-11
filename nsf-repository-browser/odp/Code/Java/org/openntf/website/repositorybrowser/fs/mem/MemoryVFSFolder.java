@@ -82,6 +82,4 @@ public class MemoryVFSFolder extends VFSFolder {
 		// I assume this is to get the native representation
 		return null;
 	}
-	
-
 }

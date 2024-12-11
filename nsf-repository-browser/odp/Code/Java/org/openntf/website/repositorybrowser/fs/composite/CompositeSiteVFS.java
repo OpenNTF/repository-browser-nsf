@@ -29,6 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ProcessingInstruction;
 
+import com.ibm.commons.util.StringUtil;
 import com.ibm.commons.vfs.VFS;
 import com.ibm.commons.vfs.VFSException;
 import com.ibm.commons.vfs.VFSFile;
@@ -59,12 +60,14 @@ class CompositeSiteVFS extends VFS {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void doReadEntries(VFS vfs, String path, List result) {
-		for(VFSFile file : getFiles()) {
-			if(this.isAccepted(file)) {
-				try {
-					result.add(new CompositeSiteFileEntry(this, file, file.getLastModificationDate()));
-				} catch (VFSException e) {
-					throw new RuntimeException(e);
+		if(StringUtil.isEmpty(path) || "/".equals(path)) {
+			for(VFSFile file : getFiles()) {
+				if(this.isAccepted(file)) {
+					try {
+						result.add(new CompositeSiteFileEntry(this, file, file.getLastModificationDate()));
+					} catch (VFSException e) {
+						throw new RuntimeException(e);
+					}
 				}
 			}
 		}
@@ -73,9 +76,11 @@ class CompositeSiteVFS extends VFS {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void doReadResources(String path, List result, IFilter filter) {
-		for(VFSFile file : getFiles()) {
-			if(this.isAccepted(file) && (filter == null || filter.accept(file))) {
-				result.add(file);
+		if(StringUtil.isEmpty(path) || "/".equals(path)) {
+			for(VFSFile file : getFiles()) {
+				if(this.isAccepted(file) && (filter == null || filter.accept(file))) {
+					result.add(file);
+				}
 			}
 		}
 	}
