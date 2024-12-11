@@ -93,7 +93,7 @@
 					</excludes>
 					<properties>
 						<owner>Christian Guedemann, Jesse Gallagher</owner>
-						<copyrightYear>2018</copyrightYear>
+						<copyrightYear>2024</copyrightYear>
 					</properties>
 				</configuration>
 			</plugin>
